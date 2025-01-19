@@ -37,10 +37,10 @@ jobs:
           chmod 600 private_key.pem
 
           # List files in the target directory to verify the .jar file exists
-          ls -l target/
+          ls -l /home/runner/work/SimpleWebsite/SimpleWebsite/target/
 
           # Copy the .jar file directly to the EC2 instance using SCP
-          scp -o StrictHostKeyChecking=no -i private_key.pem target/your-artifact-id-1.0-SNAPSHOT.jar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/project/target/
+          scp -o StrictHostKeyChecking=no -i private_key.pem /home/runner/work/SimpleWebsite/SimpleWebsite/target/Website-1.0-SNAPSHOT.jar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/project/target/
 
           # SSH into EC2 and start the application
           ssh -o StrictHostKeyChecking=no -i private_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
@@ -48,10 +48,10 @@ jobs:
             cd /home/${{ secrets.EC2_USER }}/project
 
             # Remove any old .jar file (optional)
-            rm -f target/your-artifact-id-1.0-SNAPSHOT.jar
+            rm -f target/Website-1.0-SNAPSHOT.jar
 
             # Start the application in the background (using nohup to keep it running after SSH session ends)
-            nohup java -cp target/your-artifact-id-1.0-SNAPSHOT.jar com.example.Main > output.log 2>&1 &
+            nohup java -cp target/Website-1.0-SNAPSHOT.jar com.example.Main > output.log 2>&1 &
 
             # Optional: Check if the application is running
             ps aux | grep java
