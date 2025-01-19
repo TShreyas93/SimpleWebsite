@@ -16,11 +16,11 @@ jobs:
         uses: actions/checkout@v3
 
       # Set up JDK
-      - name: Set up JDK
+      - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '17' # Adjust Java version as needed
+          java-version: '17'
 
       # Install dependencies and build the project
       - name: Build with Maven
@@ -29,30 +29,27 @@ jobs:
       # Deploy to EC2
       - name: Deploy to EC2
         run: |
-          # Install SSH client
+          # Install SSH client and SCP (secure copy) if not already installed
           sudo apt-get install -y openssh-client
 
           # Set up the SSH key
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key.pem
           chmod 600 private_key.pem
 
-          # SSH into EC2 and deploy the application
+          # Copy the .jar file directly to the EC2 instance using SCP
+          scp -o StrictHostKeyChecking=no -i private_key.pem target/your-artifact-id-1.0-SNAPSHOT.jar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/project/target/
+
+          # SSH into EC2 and start the application
           ssh -o StrictHostKeyChecking=no -i private_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
-            # Navigate to the project directory (adjust if necessary)
+            # Navigate to the project directory
             cd /home/${{ secrets.EC2_USER }}/project
-            
-            # Pull the latest code from GitHub (if needed)
-            git pull origin main
-            
-            # Remove any old .jar file
+
+            # Remove any old .jar file (optional)
             rm -f target/your-artifact-id-1.0-SNAPSHOT.jar
-            
-            # Copy the new JAR file from GitHub Actions to EC2
-            cp /home/${{ github.actor }}/project/target/your-artifact-id-1.0-SNAPSHOT.jar target/
-            
-            # Start the application (background process with nohup)
+
+            # Start the application in the background (using nohup to keep it running after SSH session ends)
             nohup java -cp target/your-artifact-id-1.0-SNAPSHOT.jar com.example.Main > output.log 2>&1 &
-            
+
             # Optional: Check if the application is running
             ps aux | grep java
           EOF
