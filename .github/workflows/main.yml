@@ -1,0 +1,57 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main  # Trigger deployment when pushing to the main branch
+  workflow_dispatch:  # Allow manual triggering via GitHub UI
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up JDK
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+
+      # Install dependencies and build the project
+      - name: Build with Maven
+        run: mvn clean package
+
+      # Deploy to EC2
+      - name: Deploy to EC2
+        run: |
+          # Install SSH client
+          sudo apt-get install -y openssh-client
+
+          # Set up the SSH key
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key.pem
+          chmod 600 private_key.pem
+
+          # SSH into EC2 and deploy the application
+          ssh -o StrictHostKeyChecking=no -i private_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
+            # Navigate to the project directory (adjust if necessary)
+            cd /home/${{ secrets.EC2_USER }}/project
+            
+            # Pull the latest code from GitHub (if needed)
+            git pull origin main
+            
+            # Remove any old .jar file
+            rm -f target/your-artifact-id-1.0-SNAPSHOT.jar
+            
+            # Copy the new JAR file from GitHub Actions to EC2
+            cp /home/${{ github.actor }}/project/target/your-artifact-id-1.0-SNAPSHOT.jar target/
+            
+            # Start the application (background process with nohup)
+            nohup java -cp target/your-artifact-id-1.0-SNAPSHOT.jar com.example.Main > output.log 2>&1 &
+            
+            # Optional: Check if the application is running
+            ps aux | grep java
+          EOF
