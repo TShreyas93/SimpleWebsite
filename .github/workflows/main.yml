@@ -48,7 +48,7 @@ jobs:
             cd /home/ec2-user/Website
 
             # Remove any old .jar file (optional)
-            rm -f Website-1.0-SNAPSHOT.jar
+            #rm -f Website-1.0-SNAPSHOT.jar
 
             # Start the application in the background (using nohup to keep it running after SSH session ends)
             nohup java -cp Website-1.0-SNAPSHOT.jar com.example.Main > output.log 2>&1 &
