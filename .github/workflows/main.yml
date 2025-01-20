@@ -44,6 +44,10 @@ jobs:
 
           # SSH into EC2 and start the application
           ssh -o StrictHostKeyChecking=no -i private_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
+            # Display the public IP and DNS name of the EC2 instance
+            echo "Public IP: \$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)"
+            echo "Public DNS: \$(curl -s http://169.254.169.254/latest/meta-data/public-hostname)"
+
             # Navigate to the project directory
             cd /home/ec2-user/Website
 
