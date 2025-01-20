@@ -11,6 +11,6 @@ public class HelloServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("text/html");
-        resp.getWriter().println("<h1>Welcome to My Simple Website!</h1>");
+        resp.getWriter().println("<h1>Website successfully deployed on EC2 via Github Actions!</h1>");
     }
 }
